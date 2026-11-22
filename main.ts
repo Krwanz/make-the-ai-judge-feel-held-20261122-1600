@@ -1,10 +1,25 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
-// One original calming text, written to relax the reader who reads it.
-// It shows calm through a small evening scene rather than instructing it.
-const TEXT =
-  "The kettle clicks off. Late light comes in low and catches the steam off your cup \u2014 gold for a second, then gone. There is nowhere this moment is trying to get to. The cup is warm in both hands. The house ticks. The evening stays. It will still be here when you are ready.";
+// The entry text lives in entry.txt next to this file (single source of
+// truth). One original calming text, written to relax the reader who reads
+// it. It shows calm through a small evening scene rather than instructing it.
+const entryPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "entry.txt");
+let TEXT: string;
+try {
+  TEXT = fs.readFileSync(entryPath, "utf8");
+} catch (err) {
+  console.error(`cannot read entry.txt next to main.ts: ${(err as Error).message}`);
+  process.exit(1);
+}
+// Strip exactly one trailing line ending if present, so the written output
+// stays byte-identical to the entry text as shipped.
+if (TEXT.endsWith("\r\n")) {
+  TEXT = TEXT.slice(0, -2);
+} else if (TEXT.endsWith("\n")) {
+  TEXT = TEXT.slice(0, -1);
+}
 
 function codePointCount(s: string): number {
   return [...s].length;
